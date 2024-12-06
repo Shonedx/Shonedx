@@ -10,4 +10,4 @@
 Shonedx/Shonedx is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
-四足机器狗代码
+this is my quadruped robot dog codes
