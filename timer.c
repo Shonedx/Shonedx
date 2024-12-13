@@ -5,8 +5,8 @@
 
 //LEGS_COMPENSATE legs_compensate;
 //GaitParams params;
-extern int trot_time; //取自ges_cal.c
-
+extern double trot_time; //取自ges_cal.c
+extern double walk_time;
 //Ft=168Mhz/4*时钟分频
 
 
@@ -71,7 +71,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.2,0.3,4.81,9.1,0.3,1.82);
 		Dir_Set(1); //1是前进
-		Gait(0.5,7,5,-1,0,1,0,0,0,Leg_Length); 
+		Gait(0.5,5.5,3.5,-0,0,1,0,0,0,Leg_Length,0); 
 	}
 	if //慢跑状态，右摇杆后拉即可
 		(	
@@ -84,7 +84,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.7,0.3,4.81,9.1,0.3,2.82);
 		Dir_Set(1); //1是前进
-		Gait(0.5,3.5,4,-1,0,0,0,0,0,Leg_Length);
+		Gait(0.5,2.5,1.5,-1,0,0,0,0,1,Leg_Length,1);
 	}
 	if //差速左转（奔跑慢跑都可）
 		(	
@@ -98,7 +98,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.2,0.3,4.81,9.1,0.3,1.82);
 		Dir_Set(2); //2是差速左转
-		Gait(0.5,7,5,-1,0,1,0,0,0,Leg_Length); 
+		Gait(0.5,4.5,3.5,-1,0,1,0,0,0,Leg_Length,0); 
 	}
 	else if  //差速左转 
 		(	
@@ -111,7 +111,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.2,0.3,4.81,9.1,0.3,1.82);
 		Dir_Set(2); //2是差速左转
-		Gait(0.5,3.5,4,-1,0,1,0,0,0,Leg_Length); 
+		Gait(0.5,2.5,1.5,-1,0,1,0,0,1,Leg_Length,1); 
 	}
 	if //差速右转 
 		(	
@@ -124,7 +124,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.2,0.3,4.81,9.1,0.3,1.82);
 		Dir_Set(3); //3是差速右转
-		Gait(0.5,7,5,-1,0,1,0,0,0,Leg_Length); 
+		Gait(0.5,4.5,3.5,-1,0,1,0,0,0,Leg_Length,0); 
 	}
 	else if  //差速右转 
 		(	
@@ -137,7 +137,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.2,0.3,4.81,9.1,0.3,1.82);
 		Dir_Set(3); //3是差速右转
-		Gait(0.5,3.5,4,-1,0,1,0,0,0,Leg_Length); 
+		Gait(0.5,2.5,1.5,-1,0,1,0,0,1,Leg_Length,1); 
 	}
 	
 /******************************************************/
@@ -153,7 +153,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.2,0.3,4.81,9.1,0.3,1.82);
 		Dir_Set(22); //22是原地左转
-		Gait(0.5,4,4,-1,0,1,0,0,0,Leg_Length); 
+		Gait(0.5,4.5,3.5,-1,0,1,0,0,0,Leg_Length,0); 
 	}
 	
 	else if //原地右转 
@@ -168,7 +168,7 @@ void Normal_Ctrl(void)
 	{					
 		ChangeTheGainOfPID_KP_KI_KD(8.2,0.3,4.81,9.1,0.3,1.82);
 		Dir_Set(33); //33是原地右转
-		Gait(0.5,4,4,-1,0,1,0,0,0,Leg_Length); 
+		Gait(0.5,4.5,3.5,-1,0,1,0,0,0,Leg_Length,0); 
 	}
 
 //	else if(flag_forward&&flag_left==1)//只有前进状态下才允许向左差速转弯
@@ -258,7 +258,7 @@ void Normal_Ctrl(void)
 
 		Stand(X_Offset,Leg_Length); //正常站立函数
 		trot_time=1;//初始化 让狗子位置 参数为刚站起的时候
-//		
+		walk_time=1;
 	}
 }
 
