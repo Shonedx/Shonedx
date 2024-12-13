@@ -23,35 +23,46 @@
 	MOVE_DIR Move_Dir;
 	Cycloid_Gait cycloid_gait;
 	
-	double trot_time=1;
-
+	double trot_time=1.5;
+	double walk_time=1.5;
 	
 //步态相关	
  /******************************************************************************************************/
  //Tf为占空比，x_target为x轴目标值，z_target为z轴目标，x0为x轴起始坐标，z0为z轴起始坐标，xv0为摆动相抬腿前的腿的瞬间速度，zf为支撑相的z坐标
  // direction为相关方向的参数 ，change为改变步态状态相关参数
- void Gait(double Tf, double x_target, double z_target, double x0, double z0, double xv0, double zf, int direction, int change , double Leglength) 
+ void Gait(double Tf, double x_target, double z_target, double x0, double z0, double xv0, double zf, int direction, int change , double Leglength,int gait_state) 
 {
     // 更新时间周期
 //trot
-	if(trot_time>=1)
-		trot_time=0;
-	else 
-		trot_time+=t_length;
-	
-	if(trot_time>=1)//0.0017*599=1.0013
-		trot_time=1;
-
-	
+	if(gait_state==0)
+	{
+		if(trot_time>=1.5)
+			trot_time=0;
+		else 
+			trot_time+=t_length;
+		
+		if(trot_time>=1.5)//0.0017*599=1.0013
+			trot_time=1.5;
+	}
+	 if (gait_state==1)
+	{
+		if(walk_time>=1.5)
+			walk_time=0;
+		else 
+			walk_time+=t_length_w;
+		
+		if(walk_time>=1.5)
+			walk_time=1.5;
+	}
     // 根据 change 参数决定使用的步态模式
     switch (change) 
 	{
         case 0:  // 正常 trotting
             trot(trot_time, Tf, x_target, z_target, x0, z0, xv0, zf,Leglength);
             break;
-//		case 1:  // 行走
-//			
-//            break;
+		case 1:  // 行走
+			trot(walk_time, Tf, x_target, z_target, x0, z0, xv0, zf,Leglength);
+			break;
 //        case 2:  // 特殊步态（腿部单独控制）
 //            trot_leg1(trot_time, Tf, x_target, z_target + 1, x0, z0, xv0, zf, params);
 //            trot_leg(trot_time, Tf, x_target, z_target, x0, z0, xv0, zf, params);
@@ -73,6 +84,7 @@
 	Moveleg(direction);
 }
 
+
 //t为定时器里的时间，Tf为占空比，x_target为x轴目标值，z_target为z轴目标，x0为x轴起始坐标，z0为z轴起始坐标，xv0为摆动相抬腿前的腿的瞬间速度，zf为支撑相的z坐标，
 //z轴坐标竖直向下为正，竖直向上为负，这里设狗站立时的腿长为Leglength，所以狗足端站立时的初始位置为(0,Leglength)
 //Leglength为站立时的腿长，正常站立为15，下蹲为10
@@ -81,32 +93,44 @@ void trot(double t, double Tf, double x_target, double z_target, double x0, doub
 	
     if(t<Tf)
 	{
-		swing_curve_generate(t,Tf,x_target,z_target,x0,z0,xv0);
-		support_curve_generate(t,Tf,x_target,0,zf);
-
-		Legs.leg1.x=cycloid_gait.curve.xf*Move_Dir.dir1;
-		Legs.leg2.x=cycloid_gait.support.xf*Move_Dir.dir2;
-		Legs.leg3.x=cycloid_gait.support.xf*Move_Dir.dir3;
-		Legs.leg4.x=cycloid_gait.curve.xf*Move_Dir.dir4;
-		Legs.leg1.z=-cycloid_gait.curve.zf+Leglength; //这里zf为负代表狗足端向上摆动
-		Legs.leg2.z=-cycloid_gait.support.zf+Leglength;
-		Legs.leg3.z=-cycloid_gait.support.zf+Leglength;
-		Legs.leg4.z=-cycloid_gait.curve.zf+Leglength;
+		support_curve_generate_1(t,Tf,x_target,x0,z0);
+		support_curve_generate_2(t,Tf,x_target,x0,z0);
+		Legs.leg1.x=cycloid_gait.support_2.xf*Move_Dir.dir1;
+		Legs.leg2.x=cycloid_gait.support_1.xf*Move_Dir.dir2;
+		Legs.leg3.x=cycloid_gait.support_1.xf*Move_Dir.dir3;
+		Legs.leg4.x=cycloid_gait.support_2.xf*Move_Dir.dir4;
+		Legs.leg1.z=-cycloid_gait.support_2.zf+Leglength; //这里zf为负代表狗足端向上摆动
+		Legs.leg2.z=-cycloid_gait.support_1.zf+Leglength;
+		Legs.leg3.z=-cycloid_gait.support_1.zf+Leglength;
+		Legs.leg4.z=-cycloid_gait.support_2.zf+Leglength;
 	}
-  if(t>=Tf)
+  if(2*Tf>t>=Tf)
 	{
-		swing_curve_generate(t-Tf,Tf,x_target,z_target,x0,z0,xv0); 
-		support_curve_generate(t,Tf,x_target,Tf,zf);
-
-		Legs.leg1.x=cycloid_gait.support.xf*Move_Dir.dir1;
+		swing_curve_generate(t-Tf,Tf,x_target,x0,z0); 
+		support_curve_generate_1(t-Tf,Tf,x_target,x0,z0);
+		Legs.leg1.x=cycloid_gait.support_1.xf*Move_Dir.dir1;
 		Legs.leg2.x=cycloid_gait.curve.xf*Move_Dir.dir2;
 		Legs.leg3.x=cycloid_gait.curve.xf*Move_Dir.dir3;
-		Legs.leg4.x=cycloid_gait.support.xf*Move_Dir.dir4;
-		Legs.leg1.z=-cycloid_gait.support.zf+Leglength;
+		Legs.leg4.x=cycloid_gait.support_1.xf*Move_Dir.dir4;
+		Legs.leg1.z=-cycloid_gait.support_1.zf+Leglength;
 		Legs.leg2.z=-cycloid_gait.curve.zf+Leglength;
 		Legs.leg3.z=-cycloid_gait.curve.zf+Leglength;
-		Legs.leg4.z=-cycloid_gait.support.zf+Leglength;
+		Legs.leg4.z=-cycloid_gait.support_1.zf+Leglength;
 	}
+	  if(t>=2*Tf)
+	{
+		swing_curve_generate(t-2*Tf,Tf,x_target,x0,z0); 
+		support_curve_generate_2(t-2*Tf,Tf,x_target,x0,z0);
+		Legs.leg1.x=cycloid_gait.curve.xf*Move_Dir.dir1;
+		Legs.leg2.x=cycloid_gait.support_2.xf*Move_Dir.dir2;
+		Legs.leg3.x=cycloid_gait.support_2.xf*Move_Dir.dir3;
+		Legs.leg4.x=cycloid_gait.curve.xf*Move_Dir.dir4;
+		Legs.leg1.z=-cycloid_gait.curve.zf+Leglength; 
+		Legs.leg2.z=-cycloid_gait.support_2.zf+Leglength;
+		Legs.leg3.z=-cycloid_gait.support_2.zf+Leglength;
+		Legs.leg4.z=-cycloid_gait.curve.zf+Leglength;
+	}
+
 }
 //leglength站立时的腿长，正常站立为15(暂定)，下蹲为10(暂定)，x_offset是腿在x轴上的的偏移值
 void Stand(double x_offset,double Leglength)
@@ -175,68 +199,62 @@ void Moveleg(int direction)
 
 
 /**************************************生成摆动期和支撑期曲线的函数********************************************************/
-// 生成摆动期的曲线  t是当前时间，Tf是摆动期总时间 xt是目标x位移量，zh是z最高处，即目标z轴（竖直轴）位移量，x0,z0为初始位置,xv0为初始速度
-void swing_curve_generate(double t, double Tf, double xt, double zh, double x0, double z0, double xv0)
+// 生成摆动期的曲线  t是当前时间，Tf是摆动期总时间 xt是目标x位移量，zh是z最高处，即目标z轴（竖直轴）位移量，x0,z0为初始位置
+void swing_curve_generate(double t, double Tf, double xt,double x0,double z0)
 {
     double xf, zf;
-    double t_normalized = t / Tf;  // 标准化时间，使其在 [0, 1] 范围内
+    double t_normalized = fmod(t/ Tf, 1.0);  // 标准化时间，使其在 [0, 1] 范围内
 
-    // 计算 xf
-    if (t_normalized < 0.25) {
-        // 在摆动期的前 25% 时间内，使用二次多项式插值
-        xf =( (-4 * xv0 / Tf) * t * t + xv0 * t + x0  );
-    }
-    else if (t_normalized < 0.75) {
-        // 在摆动期的中间 50% 时间内，使用三次多项式插值
-        xf =( ((-4 * Tf * xv0 - 16 * xt + 16 * x0) * t * t * t) / (Tf * Tf * Tf) 
-            + ((7 * Tf * xv0 + 24 * xt - 24 * x0) * t * t) / (Tf * Tf)
-            + ((-15 * Tf * xv0 - 36 * xt + 36 * x0) * t) / (4 * Tf) 
-            + (9 * Tf * xv0 + 16 * xt) / 16  );
-    }
-    else {
-        // 在摆动期的后 25% 时间内，保持 x 坐标不变
-        xf = xt;
-    }
+    // 摆线参数方程中的 r 是从起始点到目标点的距离的一半
+    double r = 2*xt/2/PI;
 
-    // 计算 zf
-    if (t_normalized < 0.5) {
-        // 在摆动期的前 50% 时间内，使用三次多项式插值
-        zf = (16 * z0 - 16 * zh) * t * t * t / (Tf * Tf * Tf) 
-             + (12 * zh - 12 * z0) * t * t / (Tf * Tf) 
-             + z0;
-    }
-    else {
-        // 在摆动期的后 50% 时间内，使用二次多项式插值
-        zf = (4 * z0 - 4 * zh) * t * t / (Tf * Tf) - (4 * z0 - 4 * zh) * t / Tf + z0;
-    }
+    // 角度参数 theta
+    double theta = 2 * PI * t_normalized;
 
-    // 确保 zf 不为负值
+    // 计算摆线轨迹的 x 和 z 坐标
+    xf = -xt + r * (theta - sin(theta));
+    zf = z0 + 1.5*r * (1 - cos(theta));
+
     if (zf < 0) {
         zf = 0;
     }
 
+    // 确保 xf 不超过目标位置 xt
+    if (xf > xt) {
+        xf = xt;
+    }
+	 if (xf < -xt) {
+        xf = -xt;
+    }
+
     // 记录当前状态
-    cycloid_gait.curve.xf = xf;  // 当前 x 坐标
-    cycloid_gait.curve.zf = zf;  // 当前 z 坐标
-    cycloid_gait.curve.x_past = xf;  // 记录上一个 x 坐标
-    cycloid_gait.curve.t_past = t;  // 记录当前时间
+    cycloid_gait.curve.xf = xf;   // 当前 x 坐标
+    cycloid_gait.curve.zf = zf;   // 当前 z 坐标
+
 }
-
-
-// 生成支撑期的曲线 t: 当前时间 Tf: 支撑期的总时间 x_past: 上一个摆动期结束时的 x 坐标 t_past: 上一个摆动期结束时的时间  zf: 支撑期的 z 坐标（通常是恒定的）。
-void support_curve_generate(double t, double Tf, double x_past, double t_past, double zf)
+//摆动前的第一个支撑期此时足端从原点向后移动到摆动的起始位置
+void support_curve_generate_1(double t, double Tf, double x_target,double x0,double z0)
 {
-    double average, xf;
-
-    // 计算平均速度
-    average = x_past / ( 1 - Tf);
-
-    // 使用线性插值计算 xf
-    xf =( x_past - average * (t - t_past)  );
-
-    // 记录当前状态
-    cycloid_gait.support.xf = xf;  // 当前 x 坐标
-    cycloid_gait.support.zf = zf;  // 当前 z 坐标（通常是恒定的）
+	double xf, zf;
+	double t_normalized = fmod(t/ Tf, 1.0); 
+	xf=x0-x_target*t_normalized;
+	zf=z0;
+	if(xf<-x_target)
+		xf=-x_target;
+	cycloid_gait.support_1.xf = xf;   // 当前 x 坐标
+	cycloid_gait.support_1.zf = zf;   // 当前 z 坐标
+}
+//摆动后的第二个支撑期，足端从摆动后的落地向后移动到原点
+void support_curve_generate_2(double t, double Tf, double x_target,double x0,double z0)
+{
+	double xf, zf;
+	double t_normalized = fmod(t/ Tf, 1.0);
+	xf=x_target-x_target*t_normalized;
+	zf=z0;
+	if(xf<0)
+		xf=0;
+	cycloid_gait.support_2.xf = xf;   // 当前 x 坐标
+	cycloid_gait.support_2.zf = zf;   // 当前 z 坐标		
 }
 
 //设置相关摆动角
