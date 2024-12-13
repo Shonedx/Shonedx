@@ -100,6 +100,7 @@ void Normal_Action(void)
 		right_rocker_flag.forward = 1;  //默认步态标志位置一
 	}
 /***********************************************/	
+	//前进
 	if (left_y >= 230 && abs(left_x) <= 330 && RPS == 1) 
 	{	reset = 0;  //重置标志置零
 		left_rocker_flag.back=0;	//后退置零
@@ -107,7 +108,7 @@ void Normal_Action(void)
 		left_rocker_flag.turn_left=left_rocker_flag.turn_right=0; 	//左右转置零
 	}
 	// 差速左转
-	if (left_x <= -330 &&left_y >= 230 && RPS == 1) 
+	else if (left_x <= -330 &&left_y >= 230 && RPS == 1) 
 	{
 		reset = 0;  //重置标志置零
 		left_rocker_flag.turn_left=1; 	//左转置一
@@ -124,7 +125,7 @@ void Normal_Action(void)
 		left_rocker_flag.turn_left=0; 	//左转置零
 	}
 	// 原地左转
-	if (right_x <= -100 && RPS == 1 && abs(left_y) <= 330 && abs(left_x) <= 330 ) 
+	else if (right_x <= -100 && RPS == 1 && abs(left_y) <= 330 && abs(left_x) <= 330 ) 
 	{
 		reset = 0;  //重置标志置零
 		//左摇杆部分
@@ -149,33 +150,15 @@ void Normal_Action(void)
 		right_rocker_flag.turn_left=0;
 		right_rocker_flag.turn_right=1;
 	}
-	if
-		(
-			abs(right_x) <= 330 			 
-		) 
-	{
-		right_rocker_flag.turn_left=0;
-		right_rocker_flag.turn_right=0;
-	}
+//	if
+//		(
+//			abs(right_x) <= 330 			 
+//		) 
+//	{
+//		right_rocker_flag.turn_left=0;
+//		right_rocker_flag.turn_right=0;
+//	}
 
-//// 另一种状态，RPS == 3
-//else if (left_y >= 500 && RPS == 3) {
-//	right_pingdong = left_pingdong = reset = flag_back = flag_situ_right = flag_situ_left = 0;
-//	flag_forward = 1;
-//	TIM_Cmd(TIM4, ENABLE);
-//}
-//// 左侧控制
-//else if (left_x <= -300) {
-//	left_pingdong = 1;
-//	right_pingdong = flag_back = flag_situ_right = flag_situ_left = reset = flag_forward = flag_left = flag_right = 0;
-//	TIM_Cmd(TIM4, ENABLE);
-//}
-//// 右侧控制
-//else if (left_x >= 300) {
-//	right_pingdong = 1;
-//	left_pingdong = flag_back = flag_situ_right = flag_situ_left = reset = flag_forward = flag_left = flag_right = 0;
-//	TIM_Cmd(TIM4, ENABLE);
-//}
 //// 后退
 //else if (left_y <= -550) {
 //	flag_back = 1;
@@ -183,14 +166,17 @@ void Normal_Action(void)
 //	TIM_Cmd(TIM4, ENABLE);
 //}
 // 重置 
-	if 
+	else if 
 		(
 			abs(left_y) <= 330 
-			&& abs(left_x) <= 330 
+			&& abs(left_x) <= 330
+			&&abs(right_x) <= 330 	
 		) 
 	{
 		reset = 1;
 		left_rocker_flag.back = left_rocker_flag.forward = left_rocker_flag.turn_left = left_rocker_flag.turn_right = 0;
+		right_rocker_flag.turn_left=0;
+		right_rocker_flag.turn_right=0;
 		TIM_Cmd(TIM4, ENABLE);
 	}
 	
